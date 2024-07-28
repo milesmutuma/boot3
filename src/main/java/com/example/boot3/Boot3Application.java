@@ -1,16 +1,32 @@
 package com.example.boot3;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpFilter;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.availability.AvailabilityChangeEvent;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+
+import java.io.IOException;
 
 @Slf4j
 @SpringBootApplication
+@ServletComponentScan
 public class Boot3Application {
 
 
@@ -21,6 +37,25 @@ public class Boot3Application {
 
         SpringApplication.run(Boot3Application.class, args);
     }
+
+    @WebFilter(urlPatterns = "/legacy")
+    class LegacyFilter extends HttpFilter{
+        @Override
+        public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+            super.doFilter(request, response, chain);
+        }
+    }
+    //register servelet
+    @WebServlet("/legacy")
+    class LegacyServelet extends HttpServlet {
+        @Override
+        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+            super.doGet(req, resp);
+            resp.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_VALUE);
+            resp.getWriter().println("OK");
+        }
+    }
+
 
 //    @Bean
 //    ApplicationRunner runner(CustomerService customerService) {
@@ -45,7 +80,6 @@ public class Boot3Application {
 //        return event -> log.info("the service is healthy {}", event.getState().toString());
 //    }
 }
-
 
 
 //@RequiredArgsConstructor
